@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Including all metadata and libraries -->
+	<meta charset="utf-8" />
+	<title>{{ title }}</title>
+
+	<!-- Bootstap and Fonts -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css?family=Bungee|PT+Mono" rel="stylesheet">
+	<link rel="stylesheet" href="/stylesheets/style.css" />
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+</head>
+<body onload="getAccessKey()">
+	<!-- Navbar and components -->
+	<nav class="navbar navbar-light bg-light">
+  		<a class="navbar-brand" href="/">
+    		<img src="http://simpleicon.com/wp-content/uploads/lock-10.svg" width="30" height="30" class="d-inline-block align-top" id="navbar-padlock" alt="">
+    		PM
+  		</a>
+	</nav>
+	<center>
+		<h3 id="chat-title" class="chat-title-text bungee">{{ chat_title }}</h3>
+	</center>
+
+	<!-- Sending Messages Footer -->
+	<footer class="footer message-footer">
+		<div class="container">
+			<input type="text" name="typed-message" class="typed-message-input mono" placeholder="Type your message here" />
+			<button type="button" class="btn btn-warning mono send-button"> ~ Send ~ </button>
+		</div>
+	</footer>
+	<script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+	<script type="text/javascript">
+		// Function to retrieve the access key
+		function getAccessKey(){
+			return prompt("Please type in the Access Key");
+		}
+
+		// Firebase init and usage
+		// Initialize Firebase
+		var config = {
+		    apiKey: "AIzaSyBulSoVqBqa7eGlgm4iikKK05mhBv9ZhXs",
+		    authDomain: "private-messenger-10376.firebaseapp.com",
+		    databaseURL: "https://private-messenger-10376.firebaseio.com",
+		    projectId: "private-messenger-10376",
+		    storageBucket: "",
+		    messagingSenderId: "99507691554"
+		};
+
+	  firebase.initializeApp(config);
+	  var database = firebase.database();
+
+	  // Top data structure in firebase
+	  var dbRefObject = database.ref().child('chats');
+	  // Chat id child
+	  var dbRefList = dbRefObject.child("{{ chat_id }}");
+	  var chat_title;
+	  var access_key;
+	  dbRefList.once('value').then(function(snapshot){
+	  	 document.getElementById("chat-title").innerHTML = snapshot.val().chat_title;
+
+	  	 access_key = snapshot.val().chat_access_key;
+	  	 // Validate access key
+		  var entered_key = "";
+		  if(entered_key != access_key){
+		  	 // Loop to keep asking for the value
+		  	 while(entered_key != access_key){
+		  	 	console.log(entered_key);
+		  	 	console.log(access_key);
+		  	 	entered_key = getAccessKey();
+
+		  	 }
+		  }
+	  });
+	</script>
+</body>
+</html>

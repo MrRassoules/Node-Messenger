@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Including all metadata and libraries -->
+	<meta charset="utf-8" />
+	<title>{{ title }}</title>
+
+	<!-- Bootstap and Fonts -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css?family=Bungee|PT+Mono" rel="stylesheet">
+	<link rel="stylesheet" href="/stylesheets/style.css" />
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+	<!-- Script for the live clock -->
+	<script type="text/javascript">
+		function startTime() {
+			var today = new Date();
+			var h = today.getHours();
+			var m = today.getMinutes();
+			var s = today.getSeconds();
+			m = checkTime(m);
+			s = checkTime(s);
+			document.getElementById('timer').innerHTML = "<span class='timer-pretext'>The time now is </span>" + h + ":" + m + ":" + s;
+			var t = setTimeout(startTime, 500);
+		}
+		function checkTime(i) {
+			if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+			return i;
+		}
+	</script>
+</head>
+<body onload="startTime()">
+	<!-- Navbar and inclded buttons -->
+	<nav class="navbar navbar-light bg-light">
+		<a class="navbar-brand" href="/">
+			<img src="http://simpleicon.com/wp-content/uploads/lock-10.svg" width="30" height="30" class="d-inline-block align-top" id="navbar-padlock"alt="">
+			PM
+		</a>
+	</nav>
+
+	<!-- Divider for the timer and compoonents -->
+	<div class="container timer">
+		<center><h1 id="timer" class="timer"></h1></center>
+	</div>
+
+	<!-- Container for the new or old conversation decision -->
+	<div class="container decision-container">
+		<center>
+			<button class="btn btn-warning start-button" id="start-a-chat-button" onclick="toggleDisplay()">Start a new chat</button><span class="bungee" style="margin-right: 10px;margin-left: 10px"> or </span>
+			<button class="btn btn-warning start-button">Connect to an old chat</button>
+		</center>
+	</div>
+
+	<!-- Start a chat form -->
+	<div class="container">
+		<form id="new-chat-form" method="post" action="/messenger">
+		  <div class="form-group row">
+			<label for="chat_title" class="col-sm-2 col-form-label mono" id="chat-title">Chat Title</label>
+			<div class="col-sm-10">
+			  <input type="text" class="form-control" id="chat_title" placeholder="" ="Don't tell my wife!">
+			</div>
+		  </div>
+		  <div class="form-group row">
+			<label for="access-key" class="col-sm-2 col-form-label mono" pattern=".{8, 16}" required title="8 to 16 characters">Access Key</label>
+			<div class="col-sm-10">
+			  <input type="text" class="form-control" id="chat_access_key" placeholder="keepThisSecret">
+			</div>
+		  </div>
+		  <fieldset class="form-group">
+			<div class="row">
+			  <legend class="col-form-legend col-sm-2 mono">Conversation Settings</legend>
+			  <div class="col-sm-10">
+				<div class="form-check">
+				  <label class="form-check-label">
+					<input class="form-check-input mono" type="radio" name="gridRadios" id="gridRadios1" value="option1" checked>
+					24 hour message delete.
+				  </label>
+				</div>
+				<div class="form-check">
+				  <label class="form-check-label">
+					<input class="form-check-input mono" type="radio" name="gridRadios" id="gridRadios2" value="option2">
+					Clear conversation after 8 messages. Delete conversation at 24 hours.
+				  </label>
+				</div>
+				<div class="form-check disabled">
+				  <label class="form-check-label">
+					<input class="form-check-input mono" type="radio" name="gridRadios" id="gridRadios3" value="option3" disabled>
+					Clear conversation after one message.
+				  </label>
+				</div>
+			  </div>
+			</div>
+		  </fieldset>
+		  <div class="form-group row">
+			<div class="col-sm-2 mono">Conversation kill switch</div>
+			<div class="col-sm-10">
+			  <div class="form-check">
+				<label class="form-check-label">
+				  <input class="form-check-input mono" type="checkbox"> Enable
+				</label>
+			  </div>
+			</div>
+		  </div>
+		  <div class="form-group row">
+			<div class="col-sm-2">
+			  <button type="button" class="btn btn-warning mono" onclick="delayForm()">Start Chatting</button>
+			</div>
+			<div class="col-sm-10">
+				<p class="mono" style="margin-left: 20px; margin-top: 5px;">Your chat link will be <a href="#" id="new_link">pvtmsg.com/chat/{{ chat_id }}</a></p>
+			</div>
+		  </div>
+		</form>
+		<!-- ERROR HANDLING FOR INSUFFICIENT INFORMATION -->
+		<pre id="error_making_chat"></pre>
+	</div>
+	<script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.7/sjcl.js"></script>
+	<script type="text/javascript">
+		var chat_title;
+		var chat_access_key;
+		// Firebase init and usage
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyBulSoVqBqa7eGlgm4iikKK05mhBv9ZhXs",
+			authDomain: "private-messenger-10376.firebaseapp.com",
+			databaseURL: "https://private-messenger-10376.firebaseio.com",
+			projectId: "private-messenger-10376",
+			storageBucket: "",
+			messagingSenderId: "99507691554"
+		};
+
+		firebase.initializeApp(config);
+		var database = firebase.database();
+
+		// Top data structure in firebase
+		var dbRefObject = database.ref().child('chats');
+		// Chat id child
+		var dbRefList = dbRefObject.child("{{ chat_id }}");
+		  
+		/* GET chat id. */
+		function get_chat_id(){
+			var type;
+			var chat_id = "";
+			for(var i = 1; i <= 32; i++){
+				type = Math.random() * 2;
+				if(type == 1){
+					chat_id += Math.random() * 9;
+				}
+				else{
+					var letter = String.fromCharCode(97 + Math.random() * 25 + 0);
+					chat_id += letter;
+				}
+			}
+			return chat_id;
+		}
+		// Toggle the form for creating a new chat
+		function toggleDisplay() {
+			var x = document.getElementById("new-chat-form");
+			if (x.style.display === "none") {
+				x.style.display = "block";
+				document.getElementById("start-a-chat-button").innerHTML = "Forget it";
+			} else {
+				x.style.display = "none";
+				document.getElementById("start-a-chat-button").innerHTML = "Start a new chat";
+			}
+		}
+
+		// Submit form action
+		function sendForm(){
+			document.getElementById("new-chat-form").submit();
+			window.location.replace("/chat/{{ chat_id }}")
+		}
+
+		// Delay form action
+		function delayForm(){
+			if(document.getElementById("new-chat-form")){
+				chat_title = document.getElementById("chat_title").value;
+				chat_access_key = document.getElementById("chat_access_key").value;
+
+				if(chat_title != "" && chat_access_key != "" && (chat_access_key.length > 7 && chat_access_key.length < 17)){
+					// Check if this chat id exist and either change it or create it
+					dbRefList.once('value', function(snapshot) {
+   						var exists = (snapshot.val() !== null);
+   						if(exists == true){
+   							//Change chat_id
+   							chat_id = get_chat_id();
+   							console.log(chat_id);
+   							document.getElementById('new_link').innerHTML = "pvtmsg.com/chat/{{ chat_id }}";
+
+   							document.getElementById("error_making_chat").innerHTML = "<p class='mark'>This chat link aready exists, we have changed the link to <a href='#'>http://pvtmsg.com/chat/" + chat_id + "</a>.</p><p>Please try again!</p>";
+
+   							{{ chat_id }} = chat_id;
+
+	   					} else {
+	   						// Create a new chat
+							dbRefList.set({
+								chat_title: chat_title,
+								chat_access_key: chat_access_key,
+								message: "",
+							});
+							// Submit information
+							setTimeout("sendForm()", 1000); // Set timeout
+						}
+						dbRefList = dbRefObject.child("{{ chat_id }}");
+						// Create a new chat after id change
+						dbRefList.set({
+							chat_title: chat_title,
+							chat_access_key: chat_access_key,
+							message: "",
+						});
+						// Submit information
+						setTimeout("sendForm()", 1000); // Set timeout
+   					});
+					
+				}
+				else{
+					// Insufficient Information handling
+					if(chat_access_key.length > 16 || chat_access_key.length < 8){
+						document.getElementById("error_making_chat").innerHTML = "<p class='mark'>Check if your access key is between 8 and 16 characters</p>";
+					}
+					else if(chat_title === ""){
+						document.getElementById("error_making_chat").innerHTML = "<p class='mark'>You have an empty chat title</p>";
+					}
+					else{
+						document.getElementById("error_making_chat").innerHTML = "<p class='mark'>An error has occured try again.</p>";
+					}
+				}
+			}
+		}
+	</script>
+</body>
+</html>

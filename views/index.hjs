@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>{{ title }}</title>
+	<!-- Adding bootstrap libraries, metadata and styles -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css?family=Bungee|PT+Mono" rel="stylesheet">
+	<link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+<body>
+	<nav class="navbar navbar-light bg-light">
+  		<a class="navbar-brand" href="/">
+    		<img src="http://simpleicon.com/wp-content/uploads/lock-10.svg" width="30" height="30" class="d-inline-block align-top" id="navbar-padlock" alt="">
+    		PM
+  		</a>
+	</nav>
+	<div class="jumbtron inverse">
+		<div class="container title-container">
+			<center><h1 id="brand-logo">Private Messenger</h1></center>
+		</div>
+		<center><img src="images/whitepadlock.png" id="big-padlock-image"></center>
+		<div class="container demo-text-container">
+			<p class="center demo-text">This is a private messenger intended to allow free and private communication between two people. There is no saving of any information of any kind after 24 hours of starting a conversation. All conversations are password protected and encrypted.</p>
+		</div>
+		<center>
+			<a href="/chat" class="no-decor">
+				<button type="button" class="btn btn-warning start-button">
+					Get Started
+				</button>
+			</a>
+		</center>
+	</div>
+	<h2>{{ chat_id }}</h2>
+	<javascript src="node_modules/bootstrap/dist/js/bootstrap.min.js" type="text/javascript">
+</body>
+</html>
